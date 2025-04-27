@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+    
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -64,6 +65,7 @@
 </table>
 
 <button onclick="guardarPDF()">Guardar como PDF</button>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
 const combinacionesValidas = [
@@ -160,9 +162,55 @@ function actualizarPosicion(selectTurno) {
     }
 }
 
-function guardarPDF() {
-    alert('Aquí integraríamos jsPDF para descargar el formulario como PDF.');
+async function guardarPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    let y = 10;
+
+    // Título
+    doc.setFontSize(16);
+    doc.text("FORMULARIO DE SOLICITUD DE LÍNEA", 20, y);
+    y += 15;
+
+    // Datos personales
+    const codigo = document.getElementById('codigo').value.trim();
+    const nombre = document.getElementById('nombre').value.trim();
+    const centro = document.getElementById('centro').value.trim();
+
+    doc.setFontSize(12);
+    doc.text(`Código de Empleado: ${codigo}`, 20, y);
+    y += 7;
+    doc.text(`Nombre y Apellidos: ${nombre}`, 20, y);
+    y += 7;
+    doc.text(`Centro de Trabajo: ${centro}`, 20, y);
+    y += 15;
+
+    // Cabecera de la tabla
+    doc.text("PREFERENCIAS:", 20, y);
+    y += 7;
+    doc.text("Preferencia | Grupo | Línea | Turno | Posición", 20, y);
+    y += 7;
+
+    // Recoger y escribir filas
+    const filas = document.querySelectorAll('#tablaOpciones tr');
+    filas.forEach(fila => {
+        const preferencia = fila.children[0].innerText.trim();
+        const grupo = fila.children[1].querySelector('select').value.trim() || '--';
+        const linea = fila.children[2].querySelector('select').value.trim() || '--';
+        const turno = fila.children[3].querySelector('select').value.trim() || '--';
+        const posicion = fila.children[4].querySelector('select').value.trim() || '--';
+
+        const textoFila = `${preferencia} | ${grupo} | ${linea} | ${turno} | ${posicion}`;
+        doc.text(textoFila, 20, y);
+        y += 7;
+    });
+
+    // Descargar
+    const nombreArchivo = nombre ? nombre.replaceAll(' ', '_') : 'Solicitud';
+    doc.save(`Solicitud_Linea_${nombreArchivo}.pdf`);
 }
+
 </script>
 
 </body>
