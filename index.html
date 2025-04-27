@@ -64,8 +64,11 @@
     </tbody>
 </table>
 
-<button onclick="guardarPDF()">Guardar como PDF</button>
+<button id="btnPDF" onclick="guardarPDF()">Guardar como PDF</button>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+
 
 <script>
 const combinacionesValidas = [
@@ -170,46 +173,52 @@ async function guardarPDF() {
 
     // Título
     doc.setFontSize(16);
-    doc.text("FORMULARIO DE SOLICITUD DE LÍNEA", 20, y);
+    doc.text("Formulario de Solicitud de Línea", 20, y);
     y += 15;
 
     // Datos personales
-    const codigo = document.getElementById('codigo').value.trim();
-    const nombre = document.getElementById('nombre').value.trim();
-    const centro = document.getElementById('centro').value.trim();
-
     doc.setFontSize(12);
+    const codigo = document.getElementById('codigo').value || "";
+    const nombre = document.getElementById('nombre').value || "";
+    const centro = document.getElementById('centro').value || "";
+
     doc.text(`Código de Empleado: ${codigo}`, 20, y);
     y += 7;
     doc.text(`Nombre y Apellidos: ${nombre}`, 20, y);
     y += 7;
     doc.text(`Centro de Trabajo: ${centro}`, 20, y);
-    y += 15;
+    y += 10;
 
-    // Cabecera de la tabla
-    doc.text("PREFERENCIAS:", 20, y);
-    y += 7;
-    doc.text("Preferencia | Grupo | Línea | Turno | Posición", 20, y);
-    y += 7;
-
-    // Recoger y escribir filas
+    // Construir datos de la tabla
     const filas = document.querySelectorAll('#tablaOpciones tr');
+    const body = [];
+
     filas.forEach(fila => {
         const preferencia = fila.children[0].innerText.trim();
-        const grupo = fila.children[1].querySelector('select').value.trim() || '--';
-        const linea = fila.children[2].querySelector('select').value.trim() || '--';
-        const turno = fila.children[3].querySelector('select').value.trim() || '--';
-        const posicion = fila.children[4].querySelector('select').value.trim() || '--';
+        const grupo = fila.children[1].querySelector('select').value || "--";
+        const linea = fila.children[2].querySelector('select').value || "--";
+        const turno = fila.children[3].querySelector('select').value || "--";
+        const posicion = fila.children[4].querySelector('select').value || "--";
 
-        const textoFila = `${preferencia} | ${grupo} | ${linea} | ${turno} | ${posicion}`;
-        doc.text(textoFila, 20, y);
-        y += 7;
+        body.push([preferencia, grupo, linea, turno, posicion]);
+    });
+
+    // Crear tabla real
+    doc.autoTable({
+        startY: y,
+        head: [['Preferencia', 'Grupo', 'Línea', 'Turno', 'Posición']],
+        body: body,
+        styles: { halign: 'center' },
+        headStyles: { fillColor: [76, 175, 80] }, // Verde TITSA
     });
 
     // Descargar
-    const nombreArchivo = nombre ? nombre.replaceAll(' ', '_') : 'Solicitud';
-    doc.save(`Solicitud_Linea_${nombreArchivo}.pdf`);
+    const nombreArchivo = nombre ? nombre.replaceAll(" ", "_") : "Solicitud_Linea";
+    doc.save(`${nombreArchivo}.pdf`);
 }
+
+
+
 
 </script>
 
