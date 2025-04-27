@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Solicitud de Línea (Offline)</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { text-align: center; color: green; }
+        label { font-weight: bold; display: block; margin-top: 10px; }
+        select, input[type="text"], input[type="number"] { width: 100%; padding: 5px; margin: 5px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #4CAF50; text-align: center; padding: 8px; }
+        th { background-color: #4CAF50; color: white; }
+        button { margin-top: 20px; padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; width: 100%; }
+        button:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+
+<h1>Formulario de Solicitud de Línea (Offline)</h1>
+
+<label for="codigo">Código de Empleado:</label>
+<input type="number" id="codigo" name="codigo" required>
+
+<label for="nombre">Nombre y Apellidos:</label>
+<input type="text" id="nombre" name="nombre" required>
+
+<label for="centro">Centro de Trabajo:</label>
+<select id="centro" name="centro" required>
+    <option value="URBANO SC">URBANO SC</option>
+    <option value="INT SC">INT SC</option>
+    <option value="LA LAGUNA">LA LAGUNA</option>
+    <option value="PUERTO DE LA CRUZ">PUERTO DE LA CRUZ</option>
+    <option value="ICOD">ICOD</option>
+    <option value="BUENAVISTA">BUENAVISTA</option>
+    <option value="GÜIMAR">GÜIMAR</option>
+    <option value="GRANADILLA">GRANADILLA</option>
+    <option value="COSTA ADEJE">COSTA ADEJE</option>
+    <option value="GUÍA ISORA">GUÍA ISORA</option>
+</select>
+
+<table>
+    <thead>
+        <tr>
+            <th>Preferencia</th>
+            <th>Grupo</th>
+            <th>Línea</th>
+            <th>Turno</th>
+            <th>Posición</th>
+        </tr>
+    </thead>
+    <tbody id="tablaOpciones">
+        <!-- 8 filas pre-hechas -->
+        <tr><td>1</td><td><select onchange="actualizarLinea(this)"><option value="">--</option></select></td><td><select disabled onchange="actualizarTurno(this)"><option value="">--</option></select></td><td><select disabled onchange="actualizarPosicion(this)"><option value="">--</option></select></td><td><select disabled><option value="">--</option></select></td></tr>
+        <tr><td>2</td><td><select onchange="actualizarLinea(this)"><option value="">--</option></select></td><td><select disabled onchange="actualizarTurno(this)"><option value="">--</option></select></td><td><select disabled onchange="actualizarPosicion(this)"><option value="">--</option></select></td><td><select disabled><option value="">--</option></select></td></tr>
+        <tr><td>3</td><td><select onchange="actualizarLinea(this)"><option value="">--</option></select></td><td><select disabled onchange="actualizarTurno(this)"><option value="">--</option></select></td><td><select disabled onchange="actualizarPosicion(this)"><option value="">--</option></select></td><td><select disabled><option value="">--</option></select></td></tr>
+        <tr><td>4</td><td><select onchange="actualizarLinea(this)"><option value="">--</option></select></td><td><select disabled onchange="actualizarTurno(this)"><option value="">--</option></select></td><td><select disabled onchange="actualizarPosicion(this)"><option value="">--</option></select></td><td><select disabled><option value="">--</option></select></td></tr>
+        <tr><td>5</td><td><select onchange="actualizarLinea(this)"><option value="">--</option></select></td><td><select disabled onchange="actualizarTurno(this)"><option value="">--</option></select></td><td><select disabled onchange="actualizarPosicion(this)"><option value="">--</option></select></td><td><select disabled><option value="">--</option></select></td></tr>
+        <tr><td>6</td><td><select onchange="actualizarLinea(this)"><option value="">--</option></select></td><td><select disabled onchange="actualizarTurno(this)"><option value="">--</option></select></td><td><select disabled onchange="actualizarPosicion(this)"><option value="">--</option></select></td><td><select disabled><option value="">--</option></select></td></tr>
+        <tr><td>7</td><td><select onchange="actualizarLinea(this)"><option value="">--</option></select></td><td><select disabled onchange="actualizarTurno(this)"><option value="">--</option></select></td><td><select disabled onchange="actualizarPosicion(this)"><option value="">--</option></select></td><td><select disabled><option value="">--</option></select></td></tr>
+        <tr><td>8</td><td><select onchange="actualizarLinea(this)"><option value="">--</option></select></td><td><select disabled onchange="actualizarTurno(this)"><option value="">--</option></select></td><td><select disabled onchange="actualizarPosicion(this)"><option value="">--</option></select></td><td><select disabled><option value="">--</option></select></td></tr>
+    </tbody>
+</table>
+
+<button onclick="guardarPDF()">Guardar como PDF</button>
+
+<script>
+const combinacionesValidas = [
+    { grupo: 'T', linea: '101', turno: 'M', posicion: '1' },
+    { grupo: 'T', linea: '102', turno: 'T', posicion: '2' },
+    { grupo: 'U', linea: '201', turno: 'N', posicion: '1' },
+    { grupo: 'U', linea: '202', turno: 'M', posicion: '2' },
+    { grupo: 'I', linea: '301', turno: 'T', posicion: '1' }
+];
+
+document.addEventListener('DOMContentLoaded', () => {
+    const selectsGrupo = document.querySelectorAll('#tablaOpciones tr td:nth-child(2) select');
+    selectsGrupo.forEach(select => cargarGrupos(select));
+});
+
+function cargarGrupos(selectGrupo) {
+    const grupos = [...new Set(combinacionesValidas.map(c => c.grupo))];
+    grupos.forEach(g => {
+        const option = document.createElement('option');
+        option.value = g;
+        option.textContent = g;
+        selectGrupo.appendChild(option);
+    });
+}
+
+function actualizarLinea(selectGrupo) {
+    const tr = selectGrupo.closest('tr');
+    const selectLinea = tr.children[2].querySelector('select');
+    const selectTurno = tr.children[3].querySelector('select');
+    const selectPosicion = tr.children[4].querySelector('select');
+
+    selectLinea.innerHTML = '<option value="">--</option>';
+    selectTurno.innerHTML = '<option value="">--</option>';
+    selectPosicion.innerHTML = '<option value="">--</option>';
+
+    selectLinea.disabled = true;
+    selectTurno.disabled = true;
+    selectPosicion.disabled = true;
+
+    if (selectGrupo.value) {
+        const lineas = [...new Set(combinacionesValidas.filter(c => c.grupo === selectGrupo.value).map(c => c.linea))];
+        lineas.forEach(linea => {
+            const option = document.createElement('option');
+            option.value = linea;
+            option.textContent = linea;
+            selectLinea.appendChild(option);
+        });
+        selectLinea.disabled = false;
+    }
+}
+
+function actualizarTurno(selectLinea) {
+    const tr = selectLinea.closest('tr');
+    const selectGrupo = tr.children[1].querySelector('select');
+    const selectTurno = tr.children[3].querySelector('select');
+    const selectPosicion = tr.children[4].querySelector('select');
+
+    selectTurno.innerHTML = '<option value="">--</option>';
+    selectPosicion.innerHTML = '<option value="">--</option>';
+
+    selectTurno.disabled = true;
+    selectPosicion.disabled = true;
+
+    if (selectLinea.value) {
+        const turnos = [...new Set(combinacionesValidas.filter(c => c.grupo === selectGrupo.value && c.linea === selectLinea.value).map(c => c.turno))];
+        turnos.forEach(turno => {
+            const option = document.createElement('option');
+            option.value = turno;
+            option.textContent = turno;
+            selectTurno.appendChild(option);
+        });
+        selectTurno.disabled = false;
+    }
+}
+
+function actualizarPosicion(selectTurno) {
+    const tr = selectTurno.closest('tr');
+    const selectGrupo = tr.children[1].querySelector('select');
+    const selectLinea = tr.children[2].querySelector('select');
+    const selectPosicion = tr.children[4].querySelector('select');
+
+    selectPosicion.innerHTML = '<option value="">--</option>';
+    selectPosicion.disabled = true;
+
+    if (selectTurno.value) {
+        const posiciones = [...new Set(combinacionesValidas.filter(c => c.grupo === selectGrupo.value && c.linea === selectLinea.value && c.turno === selectTurno.value).map(c => c.posicion))];
+        posiciones.forEach(pos => {
+            const option = document.createElement('option');
+            option.value = pos;
+            option.textContent = pos;
+            selectPosicion.appendChild(option);
+        });
+        selectPosicion.disabled = false;
+    }
+}
+
+function guardarPDF() {
+    alert('Aquí integraríamos jsPDF para descargar el formulario como PDF.');
+}
+</script>
+
+</body>
+</html>
